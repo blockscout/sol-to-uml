@@ -1,0 +1,4 @@
+[server]
+addr = "0.0.0.0:8043"
+[uml_creator]
+tmp_dir = "./sol_to_uml/tmp"
