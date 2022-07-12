@@ -39,7 +39,7 @@ async fn sol_to_uml(
             .await
             .map_err(error::ErrorBadRequest)??;
         let content = (*content).clone();
-        web::block(move || f.write_all(&content.as_bytes()))
+        web::block(move || f.write_all(content.as_bytes()))
             .await
             .map_err(error::ErrorBadRequest)??;
     }
@@ -47,7 +47,7 @@ async fn sol_to_uml(
     let uml_path = contract_dir.join(format!("{unique_name}.svg"));
     let status = Command::new("sol2uml")
         .arg(&contract_dir)
-        .arg(format!("-o"))
+        .arg("-o")
         .arg(&uml_path)
         .status()
         .expect("sol2uml command failed to start");
@@ -65,7 +65,7 @@ async fn sol_to_uml(
         web::block(move || std::fs::remove_dir_all(contract_dir))
             .await
             .map_err(error::ErrorBadRequest)??;
-        return Ok(Json(SolToUmlResponse { uml_diagram }));
+        Ok(Json(SolToUmlResponse { uml_diagram }))
     } else {
         Err(error::ErrorBadRequest(""))
     }
