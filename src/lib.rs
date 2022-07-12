@@ -8,9 +8,7 @@ use actix_web::{
     web::{self, Json},
     App, Error, HttpServer,
 };
-use std::io::Write;
-use std::path::PathBuf;
-use std::process::Command;
+use std::{io::Write, path::PathBuf, process::Command};
 use types::{SolToUmlRequest, SolToUmlResponse};
 use uuid::Uuid;
 
