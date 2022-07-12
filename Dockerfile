@@ -1,23 +1,21 @@
-FROM rust:1.59 as build
+FROM amd64/rust:1-slim-bullseye as build
 
 # create a new empty shell project
-RUN USER=root cargo new --bin sol_to_uml
+RUN cargo new --bin sol_to_uml
 WORKDIR /sol_to_uml
 
 # copy over your manifests
 COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
-#COPY Cargo.toml ./sol_to_uml/Cargo.toml
 
 # this build step will cache your dependencies
 RUN cargo build --release
-RUN rm ./src/*.rs
+RUN rm -rf ./src
 
 # copy your source tree
 COPY ./src ./src
 
 # build for release
-RUN rm ./target/release/deps/sol_to_uml*
 RUN cargo build --release
 
 # The final base image
