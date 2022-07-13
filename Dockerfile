@@ -9,8 +9,8 @@ COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
 # this build step will cache your dependencies
-RUN cargo build --release
-RUN rm -rf ./src
+RUN cargo build --release \
+    && rm -rf ./src
 
 # copy your source tree
 COPY ./src ./src
@@ -21,14 +21,12 @@ RUN cargo build --release
 # The final base image
 FROM node:16-bullseye-slim
 
-RUN apt-get update
-
 WORKDIR /usr/src/
 
 # sol2uml needed phantom which installation needed bzip2
-RUN apt install bzip2
-RUN npm install phantom
-RUN npm link sol2uml --only=production
+RUN apt-get update && apt-get install bzip2 \
+    && npm install phantom \
+    && npm link sol2uml --only=production
 
 # Copy from the previous build
 COPY --from=build /sol_to_uml/target/release/sol_to_uml /usr/src/sol_to_uml

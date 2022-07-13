@@ -1,10 +1,4 @@
-use sol_to_uml::{config::Config, run};
-
-#[derive(PartialEq, Default, Clone, Debug)]
-struct Commit {
-    hash: String,
-    message: String,
-}
+use sol_to_uml::{run, Config};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {

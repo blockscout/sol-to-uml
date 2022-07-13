@@ -2,13 +2,12 @@ use crate::cli;
 use clap::Parser;
 use config::{Config as LibConfig, File};
 use serde::Deserialize;
-use std::{net::SocketAddr, path::PathBuf};
+use std::net::SocketAddr;
 
 #[derive(Deserialize, Clone, Default)]
 #[serde(default)]
 pub struct Config {
     pub server: ServerConfiguration,
-    pub uml_creator: UMLCreatorConfiguration,
 }
 
 #[derive(Deserialize, Clone)]
@@ -21,20 +20,6 @@ impl Default for ServerConfiguration {
     fn default() -> Self {
         Self {
             addr: ("0.0.0.0:8043").parse().expect("should be valid url"),
-        }
-    }
-}
-
-#[derive(Deserialize, Clone)]
-#[serde(default)]
-pub struct UMLCreatorConfiguration {
-    pub tmp_dir: PathBuf,
-}
-
-impl Default for UMLCreatorConfiguration {
-    fn default() -> Self {
-        Self {
-            tmp_dir: PathBuf::from("./tmp"),
         }
     }
 }
