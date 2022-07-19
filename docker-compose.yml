@@ -3,6 +3,4 @@ services:
   server:
     ports:
       - "8043:8043"
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    build: .

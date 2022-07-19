@@ -32,4 +32,4 @@ RUN apt-get update && apt-get install bzip2 \
 COPY --from=build /sol_to_uml/target/release/sol_to_uml /usr/src/sol_to_uml
 
 # Run the binary
-CMD ["/usr/src/sol_to_uml"]
+ENTRYPOINT ["/usr/src/sol_to_uml"]
