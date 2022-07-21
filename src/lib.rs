@@ -10,7 +10,7 @@ use actix_web::{
 };
 use std::io::{Error as StdError, Write};
 use tempfile::TempDir;
-use tokio::{process::Command, task::JoinError};
+use tokio::process::Command;
 use types::{SolToUmlRequest, SolToUmlResponse};
 
 async fn sol_to_uml(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse>, Error> {
@@ -20,7 +20,7 @@ async fn sol_to_uml(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse
 
     let join = data.sources.into_iter().map(|(name, content)| {
         let contract_path = contract_path.to_owned();
-        tokio::task::spawn_blocking(move || {
+        tokio::task::spawn_blocking(move || -> Result<(), StdError> {
             let file_path = contract_path.join(name);
             let prefix = file_path.parent();
             if let Some(prefix) = prefix {
@@ -31,8 +31,7 @@ async fn sol_to_uml(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse
             Ok(())
         })
     });
-    let results: Vec<Result<Result<_, StdError>, JoinError>> =
-        futures::future::join_all(join).await;
+    let results: Vec<_> = futures::future::join_all(join).await;
     for result in results {
         result.map_err(error::ErrorBadRequest)??;
     }
