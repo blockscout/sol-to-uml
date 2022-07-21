@@ -1,1 +1,18 @@
+## File system
+.DS_Store
+desktop.ini
+
+## Editor
+*.swp
+*.swo
+Session.vim
+.cproject
+.idea
+*.iml
+.vscode
+.project
+.favorites.json
+.settings/
+
+## Build
 /target

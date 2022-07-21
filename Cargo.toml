@@ -1,9 +1,18 @@
 [package]
-name = "sol-to-uml"
+name = "sol_to_uml"
 version = "0.1.0"
-authors = ["Rim Rakhimov <rimrakhimov@gmail.com>"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+edition = "2021"
+repository = "https://github.com/blockscout/blockscout-rs/sol_to_uml"
 
 [dependencies]
+actix-web = "4"
+clap = { version = "3", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "process"] }
+serde = { version = "1", features = ["derive"] }
+env_logger = "0.9"
+async-trait = "0.1"
+url = { version = "2.2", features = ["serde"]}
+log = "0.4"
+config = "0.13"
+futures = "0.3"
+tempfile = "3.3.0"
