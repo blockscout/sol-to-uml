@@ -13,7 +13,9 @@ use tempfile::TempDir;
 use tokio::process::Command;
 use types::{SolToUmlRequest, SolToUmlResponse};
 
-pub async fn sol_to_uml_handler(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse>, Error> {
+pub async fn sol_to_uml_handler(
+    data: Json<SolToUmlRequest>,
+) -> Result<Json<SolToUmlResponse>, Error> {
     let data = data.into_inner();
     let contract_dir = TempDir::new()?;
     let contract_path = contract_dir.path();
@@ -22,7 +24,10 @@ pub async fn sol_to_uml_handler(data: Json<SolToUmlRequest>) -> Result<Json<SolT
         let contract_path = contract_path.to_owned();
         tokio::task::spawn_blocking(move || -> Result<(), StdError> {
             if name.has_root() {
-                return Err(StdError::new(ErrorKind::Other, "Error. All paths should be relative."));
+                return Err(StdError::new(
+                    ErrorKind::Other,
+                    "Error. All paths should be relative.",
+                ));
             }
 
             let file_path = contract_path.join(name);
@@ -37,7 +42,9 @@ pub async fn sol_to_uml_handler(data: Json<SolToUmlRequest>) -> Result<Json<SolT
     });
     let results: Vec<_> = futures::future::join_all(join).await;
     for result in results {
-        result.map_err(error::ErrorInternalServerError)?.map_err(error::ErrorBadRequest)?;
+        result
+            .map_err(error::ErrorInternalServerError)?
+            .map_err(error::ErrorBadRequest)?;
     }
 
     let uml_path = contract_path.join("result.svg");

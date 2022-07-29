@@ -1,17 +1,13 @@
 use actix_web::{
     test::{self, read_body, read_body_json, TestRequest},
-    web,
-    App
+    web, App,
 };
-use std::{
-    collections::BTreeMap,
-    fs,
-    str::from_utf8,
-    path::PathBuf,
-};
+use std::{collections::BTreeMap, fs, path::PathBuf, str::from_utf8};
 
-use sol_to_uml::sol_to_uml_handler;
-use sol_to_uml::types::{SolToUmlRequest, SolToUmlResponse};
+use sol_to_uml::{
+    sol_to_uml_handler,
+    types::{SolToUmlRequest, SolToUmlResponse},
+};
 
 const CONTRACTS_DIR: &'static str = "tests/contracts";
 const UML_DIR: &'static str = "tests/uml";
@@ -22,15 +18,19 @@ mod success_tests {
 
     #[actix_web::test]
     async fn contract_with_lib() {
-        let app = test::init_service(App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml_handler)))).await;
+        let app = test::init_service(
+            App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml_handler))),
+        )
+        .await;
 
         let contract_path = format!("{}/contract_with_lib.sol", CONTRACTS_DIR);
         let uml_path = format!("{}/contract_with_lib.svg", UML_DIR);
-        let contract = fs::read_to_string(&contract_path).expect("Error while reading contract_with_lib.sol");
+        let contract =
+            fs::read_to_string(&contract_path).expect("Error while reading contract_with_lib.sol");
         let uml = fs::read_to_string(&uml_path).expect("Error while reading contract_with_lib.svg");
 
         let request = SolToUmlRequest {
-            sources: BTreeMap::from([(PathBuf::from("contract_with_lib.sol"), contract)])
+            sources: BTreeMap::from([(PathBuf::from("contract_with_lib.sol"), contract)]),
         };
         let response = TestRequest::post()
             .uri(ROUTE)
@@ -58,13 +58,17 @@ mod failure_tests {
 
     #[actix_web::test]
     async fn wrong_path() {
-        let app = test::init_service(App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml_handler)))).await;
+        let app = test::init_service(
+            App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml_handler))),
+        )
+        .await;
 
         let contract_path = format!("{}/contract_with_lib.sol", CONTRACTS_DIR);
-        let contract = fs::read_to_string(&contract_path).expect("Error while reading contract_with_lib.sol");
+        let contract =
+            fs::read_to_string(&contract_path).expect("Error while reading contract_with_lib.sol");
 
         let request = SolToUmlRequest {
-            sources: BTreeMap::from([(PathBuf::from("/usr/contract_with_lib.sol"), contract)])
+            sources: BTreeMap::from([(PathBuf::from("/usr/contract_with_lib.sol"), contract)]),
         };
         let response = TestRequest::post()
             .uri(ROUTE)
