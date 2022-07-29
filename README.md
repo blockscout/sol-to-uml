@@ -1,6 +1,10 @@
 # sol-to-uml
 A Rust service for generating Unified Modeling Language (UML) class diagrams for Solidity contracts based on Node.js package
 [sol2uml](https://github.com/naddison36/sol2uml).
+
+## Result Example
+![img1](./tests/uml/contract_with_lib.svg)
+
 ## Usage
 ### Running
 The service runs in a Docker container, which creates two images when it is built. One of them is intermediate and can be removed.
@@ -25,5 +29,5 @@ globally on your device as mentioned in the repo instructions. Notice that the c
 may fail with other versions and service may not work correctly.
 
 For testing on **Windows** you need to rewrite some code due to the way the service is implemented. Change
-[44 line in `src/lib.rs`](https://github.com/blockscout/sol-to-uml/blob/main/src/lib.rs#L44) with
+[51 line in `src/lib.rs`](./src/lib.rs#L51) with
 `let status = Command::new("cmd").arg("/C").arg("sol2uml")`. `/C` should be replaced with the drive where sol2uml is installed.
