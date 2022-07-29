@@ -26,7 +26,7 @@ WORKDIR /usr/src/
 # sol2uml needed phantom which installation needed bzip2
 RUN apt-get update && apt-get install bzip2 \
     && npm install phantom \
-    && npm link sol2uml --only=production
+    && npm link sol2uml@2.0 --only=production
 
 # Copy from the previous build
 COPY --from=build /sol_to_uml/target/release/sol_to_uml /usr/src/sol_to_uml

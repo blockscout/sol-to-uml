@@ -1,6 +1,6 @@
 mod cli;
 mod config;
-mod types;
+pub mod types;
 
 pub use crate::config::Config;
 use actix_web::{
@@ -8,12 +8,12 @@ use actix_web::{
     web::{self, Json},
     App, Error, HttpServer,
 };
-use std::io::{Error as StdError, Write};
+use std::io::{Error as StdError, ErrorKind, Write};
 use tempfile::TempDir;
 use tokio::process::Command;
 use types::{SolToUmlRequest, SolToUmlResponse};
 
-async fn sol_to_uml(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse>, Error> {
+pub async fn sol_to_uml_handler(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse>, Error> {
     let data = data.into_inner();
     let contract_dir = TempDir::new()?;
     let contract_path = contract_dir.path();
@@ -21,6 +21,10 @@ async fn sol_to_uml(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse
     let join = data.sources.into_iter().map(|(name, content)| {
         let contract_path = contract_path.to_owned();
         tokio::task::spawn_blocking(move || -> Result<(), StdError> {
+            if name.has_root() {
+                return Err(StdError::new(ErrorKind::Other, "Error. All paths should be relative."));
+            }
+
             let file_path = contract_path.join(name);
             let prefix = file_path.parent();
             if let Some(prefix) = prefix {
@@ -33,12 +37,14 @@ async fn sol_to_uml(data: Json<SolToUmlRequest>) -> Result<Json<SolToUmlResponse
     });
     let results: Vec<_> = futures::future::join_all(join).await;
     for result in results {
-        result.map_err(error::ErrorBadRequest)??;
+        result.map_err(error::ErrorInternalServerError)?.map_err(error::ErrorBadRequest)?;
     }
 
     let uml_path = contract_path.join("result.svg");
     let status = Command::new("sol2uml")
+        .arg("class")
         .arg(contract_path)
+        .arg("--hideFilename")
         .arg("-o")
         .arg(uml_path.as_path())
         .status()
@@ -59,7 +65,7 @@ pub async fn run(config: Config) -> std::io::Result<()> {
 
     log::info!("sol_to_uml server is starting at {}", socket_addr);
     HttpServer::new(move || {
-        App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml)))
+        App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml_handler)))
     })
     .bind(socket_addr)?
     .run()
