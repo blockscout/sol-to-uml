@@ -43,7 +43,7 @@ mod success_tests {
             let body = read_body(response).await;
             let message = from_utf8(&body).expect("Read body as UTF-8");
             panic!(
-                "Invalid status code (success expected). Status: {}. Messsage: {}",
+                "Invalid status code (success expected). Status: {}. Message: {}",
                 status, message
             )
         }
