@@ -25,8 +25,7 @@ pub async fn sol_to_uml_handler(
         &"-o",
         &uml_path,
     ];
-    sol2uml_call(args)
-    .await?;
+    sol2uml_call(args).await?;
     let uml_diagram = tokio::fs::read_to_string(uml_path).await?;
 
     Ok(Json(SolToUmlResponse { uml_diagram }))
@@ -39,11 +38,9 @@ pub async fn sol_to_storage_handler(
     let contract_dir = TempDir::new()?;
     let contract_path = contract_dir.path();
 
-    let main_contract_filename= data.main_contract_filename.file_name().ok_or(
-        error::ErrorBadRequest(
-            "Error. Main contract filename should contain filename.",
-        )
-    )?;
+    let main_contract_filename = data.main_contract_filename.file_name().ok_or_else(|| {
+        error::ErrorBadRequest("Error. Main contract filename should contain filename.")
+    })?;
 
     save_files(contract_path, data.sources).await?;
     let storage_path = contract_path.join("result.svg");
@@ -58,8 +55,7 @@ pub async fn sol_to_storage_handler(
         &storage_path,
     ];
 
-    sol2uml_call(args)
-    .await?;
+    sol2uml_call(args).await?;
     let storage = tokio::fs::read_to_string(storage_path).await?;
 
     Ok(Json(SolToStorageResponse { storage }))
@@ -98,7 +94,7 @@ async fn save_files(root: &Path, files: BTreeMap<PathBuf, String>) -> Result<(),
 
 async fn sol2uml_call<'a, I>(args: I) -> Result<(), Error>
 where
-    I: IntoIterator<Item = &'a dyn AsRef<OsStr>>
+    I: IntoIterator<Item = &'a dyn AsRef<OsStr>>,
 {
     let output = Command::new("sol2uml").args(args).output().await?;
 

@@ -100,7 +100,7 @@ mod success_tests {
         let app = test::init_service(
             App::new().service(web::resource(&route).route(web::post().to(sol_to_storage_handler))),
         )
-            .await;
+        .await;
 
         let contract_path = format!("{}/contract_with_lib.sol", CONTRACTS_DIR);
         let storage_path = format!("{}/storage/contract_with_lib.svg", SAMPLES_DIR);
