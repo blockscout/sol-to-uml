@@ -1,4 +1,4 @@
-use super::types::{SolToStorageRequest, SolToStorageResponse, SolToUmlRequest, SolToUmlResponse};
+use crate::types::{SolToStorageRequest, SolToStorageResponse, SolToUmlRequest, SolToUmlResponse};
 use actix_web::{error, web::Json, Error};
 use std::{
     collections::BTreeMap,
@@ -18,17 +18,14 @@ pub async fn sol_to_uml_handler(
 
     save_files(contract_path, data.sources).await?;
     let uml_path = contract_path.join("result.svg");
-    sol2uml_call(&[
-        "class",
-        contract_path
-            .to_str()
-            .ok_or_else(|| error::ErrorInternalServerError("Internal error"))?,
-        "--hideFilename",
-        "-o",
-        uml_path
-            .to_str()
-            .ok_or_else(|| error::ErrorInternalServerError("Internal error"))?,
-    ])
+    let args: Vec<&dyn AsRef<OsStr>> = vec![
+        &"class",
+        &contract_path,
+        &"--hideFilename",
+        &"-o",
+        &uml_path,
+    ];
+    sol2uml_call(args)
     .await?;
     let uml_diagram = tokio::fs::read_to_string(uml_path).await?;
 
@@ -42,20 +39,26 @@ pub async fn sol_to_storage_handler(
     let contract_dir = TempDir::new()?;
     let contract_path = contract_dir.path();
 
+    let main_contract_filename= data.main_contract_filename.file_name().ok_or(
+        error::ErrorBadRequest(
+            "Error. Main contract filename should contain filename.",
+        )
+    )?;
+
     save_files(contract_path, data.sources).await?;
     let storage_path = contract_path.join("result.svg");
-    sol2uml_call(&[
-        "storage",
-        contract_path
-            .to_str()
-            .ok_or_else(|| error::ErrorInternalServerError("Internal error"))?,
-        "-c",
-        &data.main_contract[..],
-        "-o",
-        storage_path
-            .to_str()
-            .ok_or_else(|| error::ErrorInternalServerError("Internal error"))?,
-    ])
+    let args: Vec<&dyn AsRef<OsStr>> = vec![
+        &"storage",
+        &contract_path,
+        &"-c",
+        &data.main_contract,
+        &"-cf",
+        &main_contract_filename,
+        &"-o",
+        &storage_path,
+    ];
+
+    sol2uml_call(args)
     .await?;
     let storage = tokio::fs::read_to_string(storage_path).await?;
 
@@ -93,10 +96,9 @@ async fn save_files(root: &Path, files: BTreeMap<PathBuf, String>) -> Result<(),
     Ok(())
 }
 
-async fn sol2uml_call<I, S>(args: I) -> Result<(), Error>
+async fn sol2uml_call<'a, I>(args: I) -> Result<(), Error>
 where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
+    I: IntoIterator<Item = &'a dyn AsRef<OsStr>>
 {
     let output = Command::new("sol2uml").args(args).output().await?;
 

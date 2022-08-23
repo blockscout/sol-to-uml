@@ -15,6 +15,7 @@ pub struct SolToUmlResponse {
 pub struct SolToStorageRequest {
     pub sources: BTreeMap<PathBuf, String>,
     pub main_contract: String,
+    pub main_contract_filename: PathBuf,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

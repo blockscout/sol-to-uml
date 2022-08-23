@@ -223,6 +223,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "assert-str"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6eff46575e86b852295e41df8599e94a910b1136c6af2821df9925f3cf8a1389"
+
+[[package]]
 name = "async-trait"
 version = "0.1.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1340,6 +1346,7 @@ name = "sol_to_uml"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "assert-str",
  "async-trait",
  "clap",
  "config",
