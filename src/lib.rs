@@ -1,78 +1,22 @@
 mod cli;
 mod config;
+pub mod handlers;
 pub mod types;
 
 pub use crate::config::Config;
-use actix_web::{
-    error,
-    web::{self, Json},
-    App, Error, HttpServer,
-};
-use std::io::{Error as StdError, ErrorKind, Write};
-use tempfile::TempDir;
-use tokio::process::Command;
-use types::{SolToUmlRequest, SolToUmlResponse};
-
-pub async fn sol_to_uml_handler(
-    data: Json<SolToUmlRequest>,
-) -> Result<Json<SolToUmlResponse>, Error> {
-    let data = data.into_inner();
-    let contract_dir = TempDir::new()?;
-    let contract_path = contract_dir.path();
-
-    let join = data.sources.into_iter().map(|(name, content)| {
-        let contract_path = contract_path.to_owned();
-        tokio::task::spawn_blocking(move || -> Result<(), StdError> {
-            if name.has_root() {
-                return Err(StdError::new(
-                    ErrorKind::Other,
-                    "Error. All paths should be relative.",
-                ));
-            }
-
-            let file_path = contract_path.join(name);
-            let prefix = file_path.parent();
-            if let Some(prefix) = prefix {
-                std::fs::create_dir_all(prefix)?;
-            }
-            let mut f = std::fs::File::create(file_path)?;
-            f.write_all(content.as_bytes())?;
-            Ok(())
-        })
-    });
-    let results: Vec<_> = futures::future::join_all(join).await;
-    for result in results {
-        result
-            .map_err(error::ErrorInternalServerError)?
-            .map_err(error::ErrorBadRequest)?;
-    }
-
-    let uml_path = contract_path.join("result.svg");
-    let status = Command::new("sol2uml")
-        .arg("class")
-        .arg(contract_path)
-        .arg("--hideFilename")
-        .arg("-o")
-        .arg(uml_path.as_path())
-        .status()
-        .await?;
-
-    log::info!("process finished with: {}", status);
-
-    if status.success() {
-        let uml_diagram = tokio::fs::read_to_string(uml_path).await?;
-        Ok(Json(SolToUmlResponse { uml_diagram }))
-    } else {
-        Err(error::ErrorBadRequest(""))
-    }
-}
+use actix_web::{web, App, HttpServer};
+use handlers::{sol_to_storage_handler, sol_to_uml_handler};
 
 pub async fn run(config: Config) -> std::io::Result<()> {
     let socket_addr = config.server.addr;
 
     log::info!("sol_to_uml server is starting at {}", socket_addr);
     HttpServer::new(move || {
-        App::new().service(web::resource("/sol2uml").route(web::post().to(sol_to_uml_handler)))
+        App::new().service(
+            web::scope("/solidity")
+                .route("/uml", web::post().to(sol_to_uml_handler))
+                .route("/storage", web::post().to(sol_to_storage_handler)),
+        )
     })
     .bind(socket_addr)?
     .run()
