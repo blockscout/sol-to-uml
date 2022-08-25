@@ -17,7 +17,7 @@ The service runs in a Docker container, which creates two images when it is buil
 Use `docker-compose` to build the service. The service only accepts **POST** requests.
 
 ### Generate UML diagram
-Request path is `/uml`, request should contain **JSON** with single key `sources`, value for this key is map with
+Request path is `/solidity/uml`, request should contain **JSON** with single key `sources`, value for this key is map with
 **relative file path - file content** pairs.
 
 Example:
@@ -33,7 +33,7 @@ Example:
 Service response contains JSON with single key `uml_diagram`, which value is the bytecode of UML diagram in svg format.
 
 ### Generate storage diagram
-Request path is `/storage`, request should contain **JSON** with such keys:
+Request path is `/solidity/storage`, request should contain **JSON** with such keys:
 - `sources`, value for this key is map with **relative file path - file content** pairs, same as for `/uml`.
 - `main_contract`, contains the name of the contract for which the store will be generated.
 - `main_contract_filename`, contains the name of file with `main_contract`. Needed for situations when
