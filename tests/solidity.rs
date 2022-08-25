@@ -38,6 +38,59 @@ fn fill_sources_map(sources: &mut BTreeMap<PathBuf, String>, project_path: &Path
     }
 }
 
+async fn uml_success_test(project_name: &str, sample_name: &str) {
+    let mut request = SolToUmlRequest {
+        sources: BTreeMap::new(),
+    };
+
+    let project_path = PathBuf::from(format!("{}/{}", CONTRACTS_DIR, project_name));
+    fill_sources_map(request.sources.borrow_mut(), &project_path);
+
+    let uml_path = format!("{}/uml/{}.svg", SAMPLES_DIR, sample_name);
+    let uml =
+        fs::read_to_string(&uml_path).expect(&format!("Error while reading {}.svg", sample_name));
+
+    let result = sol_to_uml_handler(Json(request)).await;
+    match result {
+        Ok(res) => {
+            assert_str_eq!(uml, res.uml_diagram);
+        }
+        Err(err) => {
+            panic!("Invalid response. Error: {}", err)
+        }
+    };
+}
+
+async fn storage_success_test(
+    project_name: &str,
+    main_contract: &str,
+    main_contract_filename: &str,
+    sample_name: &str,
+) {
+    let mut request = SolToStorageRequest {
+        sources: BTreeMap::new(),
+        main_contract: String::from(main_contract),
+        main_contract_filename: PathBuf::from(main_contract_filename),
+    };
+
+    let project_path = PathBuf::from(format!("{}/{}", CONTRACTS_DIR, project_name));
+    fill_sources_map(request.sources.borrow_mut(), &project_path);
+
+    let storage_path = format!("{}/storage/{}.svg", SAMPLES_DIR, sample_name);
+    let storage = fs::read_to_string(&storage_path)
+        .expect(&format!("Error while reading {}.svg", sample_name));
+
+    let result = sol_to_storage_handler(Json(request)).await;
+    match result {
+        Ok(res) => {
+            assert_str_eq!(storage, res.storage);
+        }
+        Err(err) => {
+            panic!("Invalid response. Error: {}", err)
+        }
+    };
+}
+
 mod success_simple_tests {
     use super::*;
 
@@ -164,157 +217,50 @@ mod success_advanced_tests {
 
     #[actix_web::test]
     async fn uml_large_project() {
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/large_project_many_methods", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/large_project_many_methods.svg", SAMPLES_DIR);
-        let uml = fs::read_to_string(&uml_path)
-            .expect("Error while reading large_project_many_methods.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("large_project_many_methods", "large_project_many_methods").await;
     }
 
     #[actix_web::test]
     async fn storage_large_project() {
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("MyToken"),
-            main_contract_filename: PathBuf::from("Token.sol"),
-        };
-
-        let project_path = PathBuf::from(format!("{}/large_project_many_methods", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!("{}/storage/large_project_many_methods.svg", SAMPLES_DIR);
-        let storage = fs::read_to_string(&storage_path)
-            .expect("Error while reading large_project_many_methods.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test(
+            "large_project_many_methods",
+            "MyToken",
+            "Token.sol",
+            "large_project_many_methods",
+        )
+        .await;
     }
 
     #[actix_web::test]
     async fn uml_many_libraries() {
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/many_libraries", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/many_libraries.svg", SAMPLES_DIR);
-        let uml = fs::read_to_string(&uml_path).expect("Error while reading many_libraries.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("many_libraries", "many_libraries").await;
     }
 
     #[actix_web::test]
     async fn uml_same_contract_names() {
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/same_contract_names", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/same_contract_names.svg", SAMPLES_DIR);
-        let uml =
-            fs::read_to_string(&uml_path).expect("Error while reading same_contract_names.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("same_contract_names", "same_contract_names").await;
     }
 
     #[actix_web::test]
     async fn storage_same_contract_names() {
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("A"),
-            main_contract_filename: PathBuf::from("Main.sol"),
-        };
-
-        let project_path = PathBuf::from(format!("{}/same_contract_names", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!("{}/storage/same_contract_names.svg", SAMPLES_DIR);
-        let storage =
-            fs::read_to_string(&storage_path).expect("Error while reading same_contract_names.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test(
+            "same_contract_names",
+            "A",
+            "Main.sol",
+            "same_contract_names",
+        )
+        .await;
     }
 
     #[actix_web::test]
     async fn storage_same_filenames_different_contracts() {
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("A"),
-            main_contract_filename: PathBuf::from("SameName.sol"),
-        };
-
-        let project_path = PathBuf::from(format!(
-            "{}/same_filenames_different_contracts",
-            CONTRACTS_DIR
-        ));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!(
-            "{}/storage/same_filenames_different_contracts.svg",
-            SAMPLES_DIR
-        );
-        let storage = fs::read_to_string(&storage_path)
-            .expect("Error while reading same_filenames_different_contracts.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test(
+            "same_filenames_different_contracts",
+            "A",
+            "SameName.sol",
+            "same_filenames_different_contracts",
+        )
+        .await;
     }
 }
 
@@ -324,236 +270,77 @@ mod success_known_issues {
     #[actix_web::test]
     async fn uml_contract_with_compile_error() {
         // sol2uml ignores not syntax compile errors
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/ContractCompileError.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/contract_compile_error.svg", SAMPLES_DIR);
-        let uml =
-            fs::read_to_string(&uml_path).expect("Error while reading contract_compile_error.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("ContractCompileError.sol", "contract_compile_error").await;
     }
 
     #[actix_web::test]
     async fn storage_contract_with_compile_error() {
         // sol2uml ignores not syntax compile errors also in storage mod
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("Main"),
-            main_contract_filename: PathBuf::from("ContractCompileError.sol"),
-        };
-
-        let project_path = PathBuf::from(format!("{}/ContractCompileError.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!("{}/storage/contract_compile_error.svg", SAMPLES_DIR);
-        let storage = fs::read_to_string(&storage_path)
-            .expect("Error while reading contract_compile_error.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test(
+            "ContractCompileError.sol",
+            "Main",
+            "ContractCompileError.sol",
+            "contract_compile_error",
+        )
+        .await;
     }
 
     #[actix_web::test]
     async fn uml_import_missing_contract() {
         // sol2uml just doesn`t show missing contract on uml diagram
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/ImportMissingContract.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/import_missing_contract.svg", SAMPLES_DIR);
-        let uml =
-            fs::read_to_string(&uml_path).expect("Error while reading import_missing_contract.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("ImportMissingContract.sol", "import_missing_contract").await;
     }
 
     #[actix_web::test]
     async fn storage_import_missing_contract() {
         // sol2uml ignores missing contract if it doesn`t affect storage
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("Main"),
-            main_contract_filename: PathBuf::from("ImportMissingContract.sol"),
-        };
-
-        let project_path = PathBuf::from(format!("{}/ImportMissingContract.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!("{}/storage/import_missing_contract.svg", SAMPLES_DIR);
-        let storage = fs::read_to_string(&storage_path)
-            .expect("Error while reading import_missing_contract.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test(
+            "ImportMissingContract.sol",
+            "Main",
+            "ImportMissingContract.sol",
+            "import_missing_contract",
+        )
+        .await;
     }
 
     #[actix_web::test]
     async fn uml_import_missing_inherited_contract() {
         // sol2uml just doesn`t show missing contract on uml, even if some of
         // existing contracts is inherited from it
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!(
-            "{}/ImportMissingInheritedContract.sol",
-            CONTRACTS_DIR
-        ));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/import_missing_inherited_contract.svg", SAMPLES_DIR);
-        let uml = fs::read_to_string(&uml_path)
-            .expect("Error while reading import_missing_inherited_contract.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test(
+            "ImportMissingInheritedContract.sol",
+            "import_missing_inherited_contract",
+        )
+        .await;
     }
 
     #[actix_web::test]
     async fn uml_import_missing_library() {
         // sol2uml just doesn`t show missing library on uml
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/ImportMissingLibrary.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/import_missing_library.svg", SAMPLES_DIR);
-        let uml =
-            fs::read_to_string(&uml_path).expect("Error while reading import_missing_library.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("ImportMissingLibrary.sol", "import_missing_library").await;
     }
 
     #[actix_web::test]
     async fn uml_long_names() {
-        let mut request = SolToUmlRequest {
-            sources: BTreeMap::new(),
-        };
-
-        let project_path = PathBuf::from(format!("{}/LongNames.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let uml_path = format!("{}/uml/long_names.svg", SAMPLES_DIR);
-        let uml = fs::read_to_string(&uml_path).expect("Error while reading long_names.svg");
-
-        let result = sol_to_uml_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(uml, res.uml_diagram);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        uml_success_test("LongNames.sol", "long_names").await;
     }
 
     #[actix_web::test]
     async fn storage_long_names() {
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("Main"),
-            main_contract_filename: PathBuf::from("LongNames.sol"),
-        };
-
-        let project_path = PathBuf::from(format!("{}/LongNames.sol", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!("{}/storage/long_names.svg", SAMPLES_DIR);
-        let storage =
-            fs::read_to_string(&storage_path).expect("Error while reading long_names.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test("LongNames.sol", "Main", "LongNames.sol", "long_names").await;
     }
 
     #[actix_web::test]
     async fn storage_same_filenames() {
         // when contracts with the same name have the same filename, then
         // storage will be returned for the contract with the smallest filename in sort order
-        let mut request = SolToStorageRequest {
-            sources: BTreeMap::new(),
-            main_contract: String::from("A"),
-            main_contract_filename: PathBuf::from("main_dir/SameName.sol"),
-        };
-
-        let project_path = PathBuf::from(format!("{}/same_filenames", CONTRACTS_DIR));
-        fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-        let storage_path = format!("{}/storage/same_filenames.svg", SAMPLES_DIR);
-        let storage =
-            fs::read_to_string(&storage_path).expect("Error while reading same_filenames.svg");
-
-        let result = sol_to_storage_handler(Json(request)).await;
-        match result {
-            Ok(res) => {
-                assert_str_eq!(storage, res.storage);
-            }
-            Err(err) => {
-                panic!("Invalid response. Error: {}", err)
-            }
-        };
+        storage_success_test(
+            "same_filenames",
+            "A",
+            "main_dir/SameName.sol",
+            "same_filenames",
+        )
+        .await;
     }
 }
 
