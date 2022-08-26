@@ -44,11 +44,11 @@ Example:
 ```
 {
   "sources": {
-    "src/test1.sol": "...first contract code..."
+    "src/test1.sol": "...first contract code with 'Main' contract..."
     "src/test2.sol": "...second contract code..."
   },
-  "main_contract": "test1.sol",
-  "main_contract_filename": "Main"
+  "main_contract": "Main",
+  "main_contract_filename": "test1.sol"
 }
 ```
 
