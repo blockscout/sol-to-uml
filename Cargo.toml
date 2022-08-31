@@ -15,5 +15,6 @@ url = { version = "2.2", features = ["serde"]}
 log = "0.4"
 config = "0.13"
 futures = "0.3"
-tempfile = "3.3.0"
-assert-str = "0.1.0"
+tempfile = "3.3"
+assert-str = "0.1"
+walkdir = "2.3"
