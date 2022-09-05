@@ -8,7 +8,7 @@ use std::{borrow::BorrowMut, collections::BTreeMap, fs, path::PathBuf, str::from
 use walkdir::WalkDir;
 
 use sol_to_uml::{
-    handlers::{sol_to_storage_handler, sol_to_uml_handler},
+    handlers::{sol_to_storage, sol_to_uml},
     types::{SolToStorageRequest, SolToStorageResponse, SolToUmlRequest, SolToUmlResponse},
 };
 
@@ -50,7 +50,7 @@ async fn uml_success_test(project_name: &str, sample_name: &str) {
     let uml =
         fs::read_to_string(&uml_path).expect(&format!("Error while reading {}.svg", sample_name));
 
-    let result = sol_to_uml_handler(Json(request)).await;
+    let result = sol_to_uml(Json(request)).await;
     match result {
         Ok(res) => {
             assert_str_eq!(uml, res.uml_diagram);
@@ -80,7 +80,7 @@ async fn storage_success_test(
     let storage = fs::read_to_string(&storage_path)
         .expect(&format!("Error while reading {}.svg", sample_name));
 
-    let result = sol_to_storage_handler(Json(request)).await;
+    let result = sol_to_storage(Json(request)).await;
     match result {
         Ok(res) => {
             assert_str_eq!(storage, res.storage);
@@ -98,7 +98,7 @@ mod success_simple_tests {
     async fn uml_simple_contract() {
         let route = format!("{}/uml", ROUTE);
         let app = test::init_service(
-            App::new().service(web::resource(&route).route(web::post().to(sol_to_uml_handler))),
+            App::new().service(web::resource(&route).route(web::post().to(sol_to_uml))),
         )
         .await;
 
@@ -135,7 +135,7 @@ mod success_simple_tests {
     async fn storage_simple_contract() {
         let route = format!("{}/storage", ROUTE);
         let app = test::init_service(
-            App::new().service(web::resource(&route).route(web::post().to(sol_to_storage_handler))),
+            App::new().service(web::resource(&route).route(web::post().to(sol_to_storage))),
         )
         .await;
 
@@ -175,7 +175,7 @@ mod success_simple_tests {
     async fn storage_simple_contract_alt_path() {
         let route = format!("{}/storage", ROUTE);
         let app = test::init_service(
-            App::new().service(web::resource(&route).route(web::post().to(sol_to_storage_handler))),
+            App::new().service(web::resource(&route).route(web::post().to(sol_to_storage))),
         )
         .await;
 
@@ -352,7 +352,7 @@ mod failure_tests {
         // also will fail for storage
         let route = format!("{}/uml", ROUTE);
         let app = test::init_service(
-            App::new().service(web::resource(&route).route(web::post().to(sol_to_uml_handler))),
+            App::new().service(web::resource(&route).route(web::post().to(sol_to_uml))),
         )
         .await;
 
@@ -387,7 +387,7 @@ mod failure_tests {
     async fn storage_wrong_main_contract() {
         let route = format!("{}/storage", ROUTE);
         let app = test::init_service(
-            App::new().service(web::resource(&route).route(web::post().to(sol_to_storage_handler))),
+            App::new().service(web::resource(&route).route(web::post().to(sol_to_storage))),
         )
         .await;
 
@@ -430,7 +430,7 @@ mod failure_tests {
         let project_path = PathBuf::from(format!("{}/library_syntax_error", CONTRACTS_DIR));
         fill_sources_map(request.sources.borrow_mut(), &project_path);
 
-        let result = sol_to_uml_handler(Json(request)).await;
+        let result = sol_to_uml(Json(request)).await;
         match result {
             Ok(res) => {
                 panic!(
@@ -462,7 +462,7 @@ mod failure_tests {
         ));
         fill_sources_map(request.sources.borrow_mut(), &project_path);
 
-        let result = sol_to_storage_handler(Json(request)).await;
+        let result = sol_to_storage(Json(request)).await;
         match result {
             Ok(res) => {
                 panic!(

@@ -6,7 +6,6 @@ repository = "https://github.com/blockscout/blockscout-rs/sol_to_uml"
 
 [dependencies]
 actix-web = "4"
-clap = { version = "3", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "process"] }
 serde = { version = "1", features = ["derive"] }
 env_logger = "0.9"
@@ -18,3 +17,13 @@ futures = "0.3"
 tempfile = "3.3"
 assert-str = "0.1"
 walkdir = "2.3"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-actix-web = "0.6"
+opentelemetry = { version = "0.17", features = ["rt-tokio"] }
+opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
+tracing-opentelemetry = "0.17"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+actix-web-prom = "0.6"
+prometheus = "0.13"
+lazy_static = "1"

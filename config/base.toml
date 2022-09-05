@@ -1,0 +1,11 @@
+[server]
+addr = "0.0.0.0:8043"
+
+[metrics]
+enabled = true
+addr = "0.0.0.0:6060"
+route = "/metrics"
+
+[jaeger]
+enabled = true
+agent_endpoint = "127.0.0.1:6831"

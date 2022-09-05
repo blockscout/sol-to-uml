@@ -1,8 +1,12 @@
-use sol_to_uml::{run, Config};
+use anyhow::Context;
+use sol_to_uml::{init_logs, run, Settings};
+use std::error::Error;
 
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    let config = Config::parse().expect("Failed to parse config");
-    run(config).await
+async fn main() -> Result<(), Box<dyn Error>> {
+    let settings = Settings::new().context("failed to parse config")?;
+    init_logs(settings.jaeger.clone());
+    run(settings).await?;
+
+    Ok(())
 }
