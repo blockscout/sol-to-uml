@@ -2,23 +2,12 @@ syntax = "proto3";
 
 package blockscout.visualizer.v1;
 
-import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 
 service SolidityVisualizer {
-  rpc VisualizeContracts(VisualizeContractsRequest) returns (VisualizeResponse) {
-      option (google.api.http) = {
-        post: "/v1/solidity:visualizeContracts"
-        body: "*"
-      };
-  }
+  rpc VisualizeContracts(VisualizeContractsRequest) returns (VisualizeResponse) {}
 
-  rpc VisualizeStorage(VisualizeStorageRequest) returns (VisualizeResponse) {
-    option (google.api.http) = {
-      post: "/v1/solidity:visualizeStorage"
-      body: "*"
-    };
-  }
+  rpc VisualizeStorage(VisualizeStorageRequest) returns (VisualizeResponse) {}
 }
 
 message VisualizeContractsRequest {
