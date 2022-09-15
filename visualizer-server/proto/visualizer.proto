@@ -4,6 +4,8 @@ package blockscout.visualizer.v1;
 
 import "google/protobuf/field_mask.proto";
 
+option go_package = "github.com/blockscout/sol-to-uml/visualizer-server";
+
 service SolidityVisualizer {
   rpc VisualizeContracts(VisualizeContractsRequest) returns (VisualizeResponse) {}
 

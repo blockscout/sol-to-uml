@@ -7,3 +7,17 @@ edition = "2021"
 
 [dependencies]
 visualizer = { path = "../visualizer" }
+
+# we're not released yet
+actix-prost = { git = "https://github.com/blockscout/actix-prost" }
+actix-web = "4"
+serde = { version = "1", features = ["derive"] }
+async-trait = "0.1"
+prost = "0.11"
+prost-types = "0.11"
+tonic = "0.8"
+
+[build-dependencies]
+actix-prost-build = { git = "https://github.com/blockscout/actix-prost" }
+tonic-build = "0.8"
+prost-build = "0.11"
