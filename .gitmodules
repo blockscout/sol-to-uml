@@ -1,0 +1,3 @@
+[submodule "visualizer-server/proto/googleapis"]
+	path = visualizer-server/proto/googleapis
+	url = git@github.com:googleapis/googleapis.git
