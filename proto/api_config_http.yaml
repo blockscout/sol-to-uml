@@ -5,8 +5,8 @@ http:
   rules:
     - selector: blockscout.visualizer.v1.SolidityVisualizer.VisualizeContracts
       post: /v1/solidity:visualizeContracts
-      body: *
+      body: "*"
 
     - selector: blockscout.visualizer.v1.SolidityVisualizer.VisualizeStorage
       post: /v1/solidity:VisualizeStorage
-      body: *
+      body: "*"
