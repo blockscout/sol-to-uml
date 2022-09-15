@@ -1,3 +1,10 @@
+mod proto;
+
 fn main() {
-    println!("Hello, world!");
+    dbg!(
+        proto::blockscout::visualizer::v1::VisualizeContractsRequest {
+            sources: Default::default(),
+            output_mask: Default::default()
+        }
+    );
 }

@@ -11,7 +11,7 @@ fn compile(
     let mut config = Config::new();
     config
         .service_generator(generator)
-        .out_dir("src/proto")
+        .compile_well_known_types()
         .protoc_arg("--openapiv2_out=proto")
         .protoc_arg("--openapiv2_opt")
         .protoc_arg("grpc_api_configuration=proto/api_config_http.yaml,output_format=yaml")
