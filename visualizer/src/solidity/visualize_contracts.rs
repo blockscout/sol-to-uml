@@ -35,9 +35,7 @@ pub async fn visualize_contracts(
 ) -> Result<Response, VisualizeContractsError> {
     let base_dir = TempDir::new().map_err(anyhow::Error::msg)?;
     let base_dir_path = base_dir.path();
-    println!("dir: {:?}", base_dir_path);
     internal::save_files(base_dir_path, request.sources).await?;
-    //tokio::time::sleep(std::time::Duration::from_secs(60)).await;
     let output_file_path = base_dir_path.join("result.svg");
     let args: Vec<String> = vec![
         "class".to_string(),
@@ -46,7 +44,6 @@ pub async fn visualize_contracts(
         "-o".to_string(),
         output_file_path.to_string_lossy().to_string(),
     ];
-    println!("args: {:?}", args);
 
     internal::sol2uml_call(args).await?;
 
