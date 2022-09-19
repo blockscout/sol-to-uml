@@ -30,6 +30,6 @@ message VisualizeStorageRequest {
 // and specify it through `request.output_mask` field. If omitted,
 // all types would be calculated and returned to the client.
 message VisualizeResponse {
-  bytes png = 1;
-  bytes svg = 2;
+  optional bytes png = 1;
+  optional bytes svg = 2;
 }

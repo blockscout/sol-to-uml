@@ -1,6 +1,5 @@
 use std::{
     collections::BTreeMap,
-    ffi::OsStr,
     io::Write,
     path::{Path, PathBuf},
 };
@@ -47,10 +46,8 @@ pub async fn save_files(root: &Path, files: BTreeMap<PathBuf, String>) -> Result
     Ok(())
 }
 
-pub async fn sol2uml_call<'a, I>(args: I) -> Result<(), Error>
-where
-    I: IntoIterator<Item = &'a dyn AsRef<OsStr>>,
-{
+pub async fn sol2uml_call(args: Vec<String>) -> Result<(), Error>
+where {
     let output = Command::new("sol2uml")
         .args(args)
         .output()
