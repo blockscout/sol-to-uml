@@ -4,6 +4,8 @@ package blockscout.visualizer.v1;
 
 import "google/protobuf/field_mask.proto";
 
+option go_package = "github.com/blockscout/sol-to-uml/visualizer-server";
+
 service SolidityVisualizer {
   rpc VisualizeContracts(VisualizeContractsRequest) returns (VisualizeResponse) {}
 
@@ -28,6 +30,6 @@ message VisualizeStorageRequest {
 // and specify it through `request.output_mask` field. If omitted,
 // all types would be calculated and returned to the client.
 message VisualizeResponse {
-  bytes png = 1;
-  bytes svg = 2;
+  optional bytes png = 1;
+  optional bytes svg = 2;
 }

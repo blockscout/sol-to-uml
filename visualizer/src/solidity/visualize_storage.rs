@@ -1,8 +1,7 @@
-use super::internal::{self, Error};
+use super::internal::{self, Error, Sol2Uml};
 use crate::response::{Response, ResponseFieldMask};
 use std::{
     collections::{BTreeMap, HashSet},
-    ffi::OsStr,
     path::PathBuf,
 };
 use tempfile::TempDir;
@@ -10,11 +9,10 @@ use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VisualizeStorageRequest {
-    sources: BTreeMap<PathBuf, String>,
-    file_path: PathBuf,
-    contract_name: String,
-
-    output_mask: HashSet<ResponseFieldMask>,
+    pub sources: BTreeMap<PathBuf, String>,
+    pub file_path: PathBuf,
+    pub contract_name: String,
+    pub output_mask: HashSet<ResponseFieldMask>,
 }
 
 #[derive(Debug, Error)]
@@ -49,18 +47,18 @@ pub async fn visualize_storage(
     internal::save_files(base_dir_path, request.sources).await?;
 
     let output_file_path = base_dir_path.join("result.svg");
-    let args: Vec<&dyn AsRef<OsStr>> = vec![
-        &"storage",
-        &base_dir_path,
-        &"-c",
-        &request.contract_name,
-        &"-cf",
-        &file_name,
-        &"-o",
-        &output_file_path,
-    ];
+    Sol2Uml::new()
+        .arg("storage")
+        .arg(&base_dir_path)
+        .arg("-c")
+        .arg(&request.contract_name)
+        .arg("-cf")
+        .arg(&file_name)
+        .arg("-o")
+        .arg(&output_file_path)
+        .call()
+        .await?;
 
-    internal::sol2uml_call(args).await?;
     let output = tokio::fs::read(output_file_path)
         .await
         .map_err(anyhow::Error::msg)?;

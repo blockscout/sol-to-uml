@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter, Write};
 use bytes::Bytes;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ResponseFieldMask {
@@ -10,8 +10,8 @@ pub enum ResponseFieldMask {
 impl Display for ResponseFieldMask {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ResponseFieldMask::Svg => {f.write_str("svg")}
-            ResponseFieldMask::Png => {f.write_str("png")}
+            ResponseFieldMask::Svg => f.write_str("svg"),
+            ResponseFieldMask::Png => f.write_str("png"),
         }
     }
 }

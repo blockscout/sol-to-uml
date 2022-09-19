@@ -47,25 +47,45 @@ pub async fn save_files(root: &Path, files: BTreeMap<PathBuf, String>) -> Result
     Ok(())
 }
 
-pub async fn sol2uml_call<'a, I>(args: I) -> Result<(), Error>
-where
-    I: IntoIterator<Item = &'a dyn AsRef<OsStr>>,
-{
-    let output = Command::new("sol2uml")
-        .args(args)
-        .output()
-        .await
-        .map_err(anyhow::Error::msg)?;
+pub struct Sol2Uml {
+    command: Command,
+}
 
-    tracing::info!("process finished with output: {:?}", output);
+#[allow(unused)]
+impl Sol2Uml {
+    pub fn new() -> Self {
+        Self {
+            command: Command::new("sol2uml"),
+        }
+    }
 
-    if output.status.success() && output.stderr.is_empty() {
-        Ok(())
-    } else {
-        Err(Error::Sol2Uml(
-            std::str::from_utf8(&output.stderr)
-                .map_err(anyhow::Error::msg)?
-                .to_owned(),
-        ))
+    pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Self {
+        self.command.arg(arg);
+        self
+    }
+
+    pub fn args<I, S>(&mut self, args: I) -> &mut Self
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        self.command.args(args);
+        self
+    }
+
+    pub async fn call(&mut self) -> Result<(), Error> {
+        let output = self.command.output().await.map_err(anyhow::Error::msg)?;
+
+        tracing::info!("process finished with output: {:?}", output);
+
+        if output.status.success() && output.stderr.is_empty() {
+            Ok(())
+        } else {
+            Err(Error::Sol2Uml(
+                std::str::from_utf8(&output.stderr)
+                    .map_err(anyhow::Error::msg)?
+                    .to_owned(),
+            ))
+        }
     }
 }
