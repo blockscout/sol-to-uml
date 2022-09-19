@@ -1,4 +1,4 @@
-use super::internal::{self, Error};
+use super::internal::{self, Error, Sol2Uml};
 use crate::response::{Response, ResponseFieldMask};
 use std::{
     collections::{BTreeMap, HashSet},
@@ -47,18 +47,18 @@ pub async fn visualize_storage(
     internal::save_files(base_dir_path, request.sources).await?;
 
     let output_file_path = base_dir_path.join("result.svg");
-    let args: Vec<String> = vec![
-        "storage".to_string(),
-        base_dir_path.to_string_lossy().to_string(),
-        "-c".to_string(),
-        request.contract_name,
-        "-cf".to_string(),
-        file_name.to_string_lossy().to_string(),
-        "-o".to_string(),
-        output_file_path.to_string_lossy().to_string(),
-    ];
+    Sol2Uml::new()
+        .arg("storage")
+        .arg(&base_dir_path)
+        .arg("-c")
+        .arg(&request.contract_name)
+        .arg("-cf")
+        .arg(&file_name)
+        .arg("-o")
+        .arg(&output_file_path)
+        .call()
+        .await?;
 
-    internal::sol2uml_call(args).await?;
     let output = tokio::fs::read(output_file_path)
         .await
         .map_err(anyhow::Error::msg)?;

@@ -1,4 +1,4 @@
-use super::internal::{self, Error};
+use super::internal::{self, Error, Sol2Uml};
 use crate::response::{Response, ResponseFieldMask};
 use std::{
     collections::{BTreeMap, HashSet},
@@ -37,15 +37,15 @@ pub async fn visualize_contracts(
     let base_dir_path = base_dir.path();
     internal::save_files(base_dir_path, request.sources).await?;
     let output_file_path = base_dir_path.join("result.svg");
-    let args: Vec<String> = vec![
-        "class".to_string(),
-        base_dir_path.to_string_lossy().to_string(),
-        "--hideFilename".to_string(),
-        "-o".to_string(),
-        output_file_path.to_string_lossy().to_string(),
-    ];
 
-    internal::sol2uml_call(args).await?;
+    Sol2Uml::new()
+        .arg("class")
+        .arg(&base_dir_path)
+        .arg("--hideFilename")
+        .arg("-o")
+        .arg(&output_file_path)
+        .call()
+        .await?;
 
     let output = tokio::fs::read(output_file_path)
         .await
