@@ -11,6 +11,6 @@ pub async fn http_server(port: u16) -> Result<(), std::io::Error> {
         App::new().configure(|config| route_solidity_visualizer(config, service.clone()))
     })
     .bind(("0.0.0.0", port))
-    .expect(&format!("failed to bind server on port {}", port));
+    .unwrap_or_else(|_| panic!("failed to bind server on port {}", port));
     server.run().await
 }
