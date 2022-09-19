@@ -9,7 +9,7 @@ consumes:
 produces:
   - application/json
 paths:
-  /api/v1/solidity:VisualizeContracts:
+  /api/v1/solidity:visualizeContracts:
     post:
       operationId: SolidityVisualizer_VisualizeContracts
       responses:
@@ -29,7 +29,7 @@ paths:
             $ref: '#/definitions/v1VisualizeContractsRequest'
       tags:
         - SolidityVisualizer
-  /api/v1/solidity:VisualizeStorage:
+  /api/v1/solidity:visualizeStorage:
     post:
       operationId: SolidityVisualizer_VisualizeStorage
       responses:
