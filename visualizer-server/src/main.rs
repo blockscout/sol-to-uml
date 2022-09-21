@@ -1,9 +1,11 @@
+use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
-    let http_server = visualizer_server::run::http_server(8050);
-    let grpc_server = visualizer_server::run::grpc_server(8051);
-    let (_, _) = futures::try_join!(http_server, grpc_server)?;
+    let service = Arc::new(visualizer_server::SolidityVisualizerService::default());
+    let grpc_server = visualizer_server::run::grpc_server(service.clone(), 8051);
+    let http_server = visualizer_server::run::http_server(service, 8050);
+    futures::try_join!(grpc_server, http_server)?;
     Ok(())
 }
