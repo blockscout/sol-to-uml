@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+
 pub mod blockscout {
     pub mod visualizer {
         pub mod v1 {
