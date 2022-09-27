@@ -4,11 +4,21 @@ use std::sync::Arc;
 async fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
     let service = Arc::new(visualizer_server::SolidityVisualizerService::default());
-    let http_server = visualizer_server::run::http_server(service.clone(), 8050);
-    let grpc_server = async move {
-        tokio::task::spawn(visualizer_server::run::grpc_server(service, 8051));
-        Ok(())
+
+    let http_server = {
+        let http_server_future = visualizer_server::run::http_server(service.clone(), 8050);
+        tokio::spawn(async move { http_server_future.await.map_err(anyhow::Error::msg) })
     };
-    let (_, _) = futures::try_join!(http_server, grpc_server)?;
-    Ok(())
+
+    let grpc_server = {
+        let service = service.clone();
+        tokio::spawn(async move { visualizer_server::run::grpc_server(service, 8051).await })
+    };
+
+    let futures = vec![http_server, grpc_server];
+    let (res, _, others) = futures::future::select_all(futures).await;
+    for future in others.into_iter() {
+        future.abort()
+    }
+    res?
 }
