@@ -12,7 +12,8 @@ impl SolidityVisualizer for SolidityVisualizerService {
         &self,
         request: tonic::Request<VisualizeContractsRequest>,
     ) -> Result<tonic::Response<VisualizeResponse>, tonic::Status> {
-        let request = request.into_inner().into();
+        let request = visualizer::VisualizeContractsRequest::try_from(request.into_inner())
+            .map_err(|e| tonic::Status::invalid_argument(e.to_string()))?;
         let result = visualizer::visualize_contracts(request).await;
         result
             .map(|response| tonic::Response::new(response.into()))
@@ -30,7 +31,8 @@ impl SolidityVisualizer for SolidityVisualizerService {
         &self,
         request: tonic::Request<VisualizeStorageRequest>,
     ) -> Result<tonic::Response<VisualizeResponse>, tonic::Status> {
-        let request = request.into_inner().into();
+        let request = visualizer::VisualizeStorageRequest::try_from(request.into_inner())
+            .map_err(|e| tonic::Status::invalid_argument(e.to_string()))?;
         let result = visualizer::visualize_storage(request).await;
         result
             .map(|response| tonic::Response::new(response.into()))

@@ -1,9 +1,6 @@
 use super::internal::{self, Error, Sol2Uml};
-use crate::response::{Response, ResponseFieldMask};
-use std::{
-    collections::{BTreeMap, HashSet},
-    path::PathBuf,
-};
+use crate::response::{OutputMask, Response, ResponseFieldMask};
+use std::{collections::BTreeMap, path::PathBuf};
 use tempfile::TempDir;
 use thiserror::Error;
 
@@ -12,7 +9,7 @@ pub struct VisualizeStorageRequest {
     pub sources: BTreeMap<PathBuf, String>,
     pub file_path: PathBuf,
     pub contract_name: String,
-    pub output_mask: HashSet<ResponseFieldMask>,
+    pub output_mask: OutputMask,
 }
 
 #[derive(Debug, Error)]
@@ -46,25 +43,29 @@ pub async fn visualize_storage(
         .ok_or(VisualizeStorageError::InvalidFileName)?;
     internal::save_files(base_dir_path, request.sources).await?;
 
-    let output_file_path = base_dir_path.join("result.svg");
-    Sol2Uml::new()
-        .arg("storage")
-        .arg(&base_dir_path)
-        .arg("-c")
-        .arg(&request.contract_name)
-        .arg("-cf")
-        .arg(&file_name)
-        .arg("-o")
-        .arg(&output_file_path)
-        .call()
-        .await?;
+    let svg = if request.output_mask.contains(&ResponseFieldMask::Svg) {
+        let output_file_path = base_dir_path.join("result.svg");
+        Sol2Uml::new()
+            .arg("storage")
+            .arg(&base_dir_path)
+            .arg("-c")
+            .arg(&request.contract_name)
+            .arg("-cf")
+            .arg(&file_name)
+            .args(["-f", "svg"])
+            .arg("-o")
+            .arg(&output_file_path)
+            .call()
+            .await?;
 
-    let output = tokio::fs::read(output_file_path)
-        .await
-        .map_err(anyhow::Error::msg)?;
+        let output = tokio::fs::read(output_file_path)
+            .await
+            .map_err(anyhow::Error::msg)?;
+        Some(output)
+    } else {
+        None
+    };
+    let png = None;
 
-    Ok(Response {
-        svg: Some(output.into()),
-        png: None,
-    })
+    Ok(Response { svg, png })
 }
