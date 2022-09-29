@@ -2,8 +2,9 @@ use std::{
     collections::HashSet,
     fmt::{Display, Formatter},
 };
+use strum::{EnumIter, IntoEnumIterator};
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, EnumIter)]
 pub enum ResponseFieldMask {
     Svg,
     Png,
@@ -18,11 +19,11 @@ impl Display for ResponseFieldMask {
     }
 }
 
-impl TryFrom<String> for ResponseFieldMask {
+impl TryFrom<&str> for ResponseFieldMask {
     type Error = anyhow::Error;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
             "svg" => Ok(ResponseFieldMask::Svg),
             "png" => Ok(ResponseFieldMask::Png),
             _ => Err(anyhow::anyhow!("invalid response filed mask: {}", value)),
@@ -35,8 +36,13 @@ pub struct OutputMask(pub HashSet<ResponseFieldMask>);
 
 impl OutputMask {
     pub fn contains(&self, key: &ResponseFieldMask) -> bool {
-        // empty output mask means that all fields must present
-        self.0.is_empty() || self.0.contains(key)
+        self.0.contains(key)
+    }
+}
+
+impl OutputMask {
+    pub fn full() -> Self {
+        OutputMask(ResponseFieldMask::iter().collect())
     }
 }
 
