@@ -16,6 +16,8 @@ fn compile(
     config
         .service_generator(generator)
         .compile_well_known_types()
+        // Rust cosider some comments as doc-comments and include them in tests
+        .disable_comments(["."])
         .protoc_arg("--openapiv2_out=proto")
         .protoc_arg("--openapiv2_opt")
         .protoc_arg("grpc_api_configuration=proto/api_config_http.yaml,output_format=yaml")
