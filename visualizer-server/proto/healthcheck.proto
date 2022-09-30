@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package blockscout.visualizer.v1;
+option go_package = "github.com/blockscout/sol-to-uml/visualizer-server";
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    ALIVE = 0;
+    DEAD = 1;
+  }
+  ServingStatus status = 1;
+}
+
+service HealthCheck {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}

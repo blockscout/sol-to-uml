@@ -1,14 +1,23 @@
+use crate::{
+    healthcheck::HealthCheckService,
+    proto::blockscout::visualizer::v1::{
+        health_check_actix::route_health_check, health_check_server::HealthCheckServer,
+        solidity_visualizer_server::SolidityVisualizerServer,
+    },
+    solidity::{route_solidity_visualizer, SolidityVisualizerService},
+};
+use actix_web::{dev::Server, App, HttpServer};
 use std::sync::Arc;
 
-use actix_web::{dev::Server, App, HttpServer};
-
-use crate::solidity::{route_solidity_visualizer, SolidityVisualizerService};
-
-use crate::proto::blockscout::visualizer::v1::solidity_visualizer_server::SolidityVisualizerServer;
-
-pub fn http_server(service: Arc<SolidityVisualizerService>, port: u16) -> Server {
+pub fn http_server(
+    visualizer: Arc<SolidityVisualizerService>,
+    healthcheck: Arc<HealthCheckService>,
+    port: u16,
+) -> Server {
     let server = HttpServer::new(move || {
-        App::new().configure(|config| route_solidity_visualizer(config, service.clone()))
+        App::new()
+            .configure(|config| route_solidity_visualizer(config, visualizer.clone()))
+            .configure(|config| route_health_check(config, healthcheck.clone()))
     })
     .bind(("0.0.0.0", port))
     .unwrap_or_else(|_| panic!("failed to bind server on port {}", port));
@@ -17,12 +26,14 @@ pub fn http_server(service: Arc<SolidityVisualizerService>, port: u16) -> Server
 }
 
 pub async fn grpc_server(
-    service: Arc<SolidityVisualizerService>,
+    visualizer: Arc<SolidityVisualizerService>,
+    healthcheck: Arc<HealthCheckService>,
     port: u16,
 ) -> Result<(), anyhow::Error> {
     let addr = ([0, 0, 0, 0], port).into();
     let server = tonic::transport::Server::builder()
-        .add_service(SolidityVisualizerServer::from_arc(service));
+        .add_service(SolidityVisualizerServer::from_arc(visualizer))
+        .add_service(HealthCheckServer::from_arc(healthcheck));
 
     server.serve(addr).await?;
     Ok(())

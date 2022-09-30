@@ -18,7 +18,7 @@ fn compile(
         .compile_well_known_types()
         .protoc_arg("--openapiv2_out=proto")
         .protoc_arg("--openapiv2_opt")
-        .protoc_arg("grpc_api_configuration=proto/api_config_http.yaml,output_format=yaml")
+        .protoc_arg("grpc_api_configuration=proto/api_config_http.yaml,output_format=yaml,allow_merge=true,merge_file_name=visualizer")
         // NOTE: order is matter. serde_with should be before serde::Serialize
         .type_attribute(".", "#[serde_with::serde_as]")
         .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")
@@ -39,6 +39,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         tonic_build::configure().service_generator(),
         Box::new(ActixGenerator::new("proto/api_config_http.yaml").unwrap()),
     ]));
-    compile(&["proto/visualizer.proto"], &["proto"], gens)?;
+    compile(
+        &["proto/visualizer.proto", "proto/healthcheck.proto"],
+        &["proto"],
+        gens,
+    )?;
     Ok(())
 }

@@ -4,6 +4,7 @@ info:
   version: version not set
 tags:
   - name: SolidityVisualizer
+  - name: HealthCheck
 consumes:
   - application/json
 produces:
@@ -49,7 +50,27 @@ paths:
             $ref: '#/definitions/v1VisualizeStorageRequest'
       tags:
         - SolidityVisualizer
+  /health:
+    get:
+      operationId: HealthCheck_Check
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1HealthCheckResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      tags:
+        - HealthCheck
 definitions:
+  HealthCheckResponseServingStatus:
+    type: string
+    enum:
+      - ALIVE
+      - DEAD
+    default: ALIVE
   protobufAny:
     type: object
     properties:
@@ -68,6 +89,11 @@ definitions:
           $ref: '#/definitions/protobufAny'
       message:
         type: string
+  v1HealthCheckResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/HealthCheckResponseServingStatus'
   v1VisualizeContractsRequest:
     type: object
     properties:
