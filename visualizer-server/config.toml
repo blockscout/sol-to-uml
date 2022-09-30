@@ -1,6 +1,0 @@
-[server.grpc]
-enabled = true
-addr = "0.0.0.0:8044"
-
-[server.http]
-enabled = true
