@@ -5,22 +5,23 @@ use crate::{
         solidity_visualizer_server::SolidityVisualizerServer,
     },
     solidity::{route_solidity_visualizer, SolidityVisualizerService},
+    Settings,
 };
 use actix_web::{dev::Server, App, HttpServer};
-use std::sync::Arc;
+use std::{net::SocketAddr, sync::Arc};
 
 pub fn http_server(
     visualizer: Arc<SolidityVisualizerService>,
     health: Arc<HealthService>,
-    port: u16,
+    addr: SocketAddr,
 ) -> Server {
     let server = HttpServer::new(move || {
         App::new()
             .configure(|config| route_solidity_visualizer(config, visualizer.clone()))
             .configure(|config| route_health(config, health.clone()))
     })
-    .bind(("0.0.0.0", port))
-    .unwrap_or_else(|_| panic!("failed to bind server on port {}", port));
+    .bind(addr)
+    .unwrap_or_else(|_| panic!("failed to bind server"));
 
     server.run()
 }
@@ -28,13 +29,48 @@ pub fn http_server(
 pub async fn grpc_server(
     visualizer: Arc<SolidityVisualizerService>,
     health: Arc<HealthService>,
-    port: u16,
+    addr: SocketAddr,
 ) -> Result<(), anyhow::Error> {
-    let addr = ([0, 0, 0, 0], port).into();
+    log::info!("starting grpc server on addr {}", addr);
     let server = tonic::transport::Server::builder()
         .add_service(SolidityVisualizerServer::from_arc(visualizer))
         .add_service(HealthServer::from_arc(health));
 
     server.serve(addr).await?;
     Ok(())
+}
+
+pub async fn sol2uml(settings: Settings) -> Result<(), anyhow::Error> {
+    let visualizer = Arc::new(SolidityVisualizerService::default());
+    let health = Arc::new(HealthService::default());
+
+    let mut futures = vec![];
+
+    if settings.server.http.enabled {
+        let http_server = {
+            let http_server_future = http_server(
+                visualizer.clone(),
+                health.clone(),
+                settings.server.http.addr,
+            );
+            tokio::spawn(async move { http_server_future.await.map_err(anyhow::Error::msg) })
+        };
+        futures.push(http_server)
+    }
+
+    if settings.server.grpc.enabled {
+        let grpc_server = {
+            let service = visualizer.clone();
+            tokio::spawn(
+                async move { grpc_server(service, health, settings.server.grpc.addr).await },
+            )
+        };
+        futures.push(grpc_server)
+    }
+
+    let (res, _, others) = futures::future::select_all(futures).await;
+    for future in others.into_iter() {
+        future.abort()
+    }
+    res?
 }
