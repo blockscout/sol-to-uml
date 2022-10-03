@@ -1,8 +1,8 @@
 pub mod run;
 
-mod healthcheck;
+mod health;
 mod proto;
 mod solidity;
 
-pub use healthcheck::HealthCheckService;
+pub use health::HealthService;
 pub use solidity::SolidityVisualizerService;

@@ -11,5 +11,5 @@ http:
       post: /api/v1/solidity:visualizeStorage
       body: "*"
     
-    - selector: blockscout.visualizer.v1.HealthCheck.Check
+    - selector: blockscout.visualizer.v1.Health.Check
       get: /health
