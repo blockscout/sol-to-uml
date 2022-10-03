@@ -10,3 +10,6 @@ http:
     - selector: blockscout.visualizer.v1.SolidityVisualizer.VisualizeStorage
       post: /api/v1/solidity:visualizeStorage
       body: "*"
+    
+    - selector: blockscout.visualizer.v1.Health.Check
+      get: /health

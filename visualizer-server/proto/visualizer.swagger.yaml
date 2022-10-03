@@ -4,6 +4,7 @@ info:
   version: version not set
 tags:
   - name: SolidityVisualizer
+  - name: Health
 consumes:
   - application/json
 produces:
@@ -49,7 +50,37 @@ paths:
             $ref: '#/definitions/v1VisualizeStorageRequest'
       tags:
         - SolidityVisualizer
+  /health:
+    get:
+      summary: |-
+        If the requested service is unknown, the call will fail with status
+        NOT_FOUND.
+      operationId: Health_Check
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1HealthCheckResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: service
+          in: query
+          required: false
+          type: string
+      tags:
+        - Health
 definitions:
+  HealthCheckResponseServingStatus:
+    type: string
+    enum:
+      - UNKNOWN
+      - SERVING
+      - NOT_SERVING
+      - SERVICE_UNKNOWN
+    default: UNKNOWN
   protobufAny:
     type: object
     properties:
@@ -68,6 +99,11 @@ definitions:
           $ref: '#/definitions/protobufAny'
       message:
         type: string
+  v1HealthCheckResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/HealthCheckResponseServingStatus'
   v1VisualizeContractsRequest:
     type: object
     properties:
