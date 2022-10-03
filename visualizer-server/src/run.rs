@@ -11,13 +11,13 @@ use std::sync::Arc;
 
 pub fn http_server(
     visualizer: Arc<SolidityVisualizerService>,
-    healthcheck: Arc<HealthService>,
+    health: Arc<HealthService>,
     port: u16,
 ) -> Server {
     let server = HttpServer::new(move || {
         App::new()
             .configure(|config| route_solidity_visualizer(config, visualizer.clone()))
-            .configure(|config| route_health(config, healthcheck.clone()))
+            .configure(|config| route_health(config, health.clone()))
     })
     .bind(("0.0.0.0", port))
     .unwrap_or_else(|_| panic!("failed to bind server on port {}", port));
@@ -27,13 +27,13 @@ pub fn http_server(
 
 pub async fn grpc_server(
     visualizer: Arc<SolidityVisualizerService>,
-    healthcheck: Arc<HealthService>,
+    health: Arc<HealthService>,
     port: u16,
 ) -> Result<(), anyhow::Error> {
     let addr = ([0, 0, 0, 0], port).into();
     let server = tonic::transport::Server::builder()
         .add_service(SolidityVisualizerServer::from_arc(visualizer))
-        .add_service(HealthServer::from_arc(healthcheck));
+        .add_service(HealthServer::from_arc(health));
 
     server.serve(addr).await?;
     Ok(())
