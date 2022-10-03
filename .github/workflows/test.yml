@@ -51,7 +51,7 @@ jobs:
           cache-on-failure: true
 
       - name: cargo test
-        run: cargo test --locked --workspace --all-features --doc
+        run: cargo test --locked --workspace --all-features --doc -- --skip proto
 
   integration:
     name: Integration tests
