@@ -29,6 +29,10 @@ fn compile(
         .field_attribute(
             ".blockscout.visualizer.v1.VisualizeResponse.svg",
             option_base64(),
+        )
+        .field_attribute(
+            ".blockscout.visualizer.v1.HealthCheckRequest.service", 
+            "#[serde(default)]"
         );
     config.compile_protos(protos, includes)?;
     Ok(())
