@@ -4,6 +4,7 @@ use crate::proto::{
     },
     google::protobuf::FieldMask,
 };
+use bytes::Bytes;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     path::PathBuf,
@@ -61,8 +62,8 @@ impl TryFrom<VisualizeStorageRequest> for visualizer::VisualizeStorageRequest {
 impl From<visualizer::Response> for VisualizeResponse {
     fn from(response: visualizer::Response) -> Self {
         Self {
-            png: response.png,
-            svg: response.svg,
+            png: response.png.map(Bytes::from),
+            svg: response.svg.map(Bytes::from),
         }
     }
 }
