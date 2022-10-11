@@ -15,6 +15,7 @@ pub fn http_server(
     health: Arc<HealthService>,
     addr: SocketAddr,
 ) -> Server {
+    log::info!("starting http server on addr {}", addr);
     let server = HttpServer::new(move || {
         App::new()
             .configure(|config| route_solidity_visualizer(config, visualizer.clone()))

@@ -6,6 +6,10 @@ on:
 
 name: Test Suite
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: blockscout/visualizer-server
+
 jobs:
   unit:
     name: Unit tests
@@ -63,6 +67,15 @@ jobs:
       - name: Install deps
         uses: ./.github/actions/deps
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install sol2uml
+        run: |
+          npm install phantom 
+          npm link sol2uml@2.1 --only=production
+
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -104,3 +117,41 @@ jobs:
 
       - name: cargo clippy
         run: cargo clippy --all --all-features -- -D warnings
+
+  push:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - unit
+      - doc
+      - integration
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: "{{defaultContext}}"
+          file: "./Dockerfile"
+          push: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
