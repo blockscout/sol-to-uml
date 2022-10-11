@@ -73,6 +73,11 @@ impl Sol2Uml {
         self
     }
 
+    pub fn current_dir<P: AsRef<Path>>(&mut self, dir: P) -> &mut Self {
+        self.command.current_dir(dir);
+        self
+    }
+
     pub async fn call(&mut self) -> Result<(), Error> {
         let output = self.command.output().await.map_err(anyhow::Error::msg)?;
 

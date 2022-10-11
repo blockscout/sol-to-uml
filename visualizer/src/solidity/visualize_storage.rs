@@ -44,20 +44,22 @@ pub async fn visualize_storage(
     internal::save_files(base_dir_path, request.sources).await?;
 
     let svg = if request.output_mask.contains(&ResponseFieldMask::Svg) {
-        let output_file_path = base_dir_path.join("result.svg");
+        let output_file = "result.svg";
         Sol2Uml::new()
+            .current_dir(&base_dir)    
             .arg("storage")
-            .arg(&base_dir_path)
+            .arg(".")
             .arg("-c")
             .arg(&request.contract_name)
             .arg("-cf")
             .arg(&file_name)
             .args(["-f", "svg"])
             .arg("-o")
-            .arg(&output_file_path)
+            .arg(&output_file)
             .call()
             .await?;
 
+        let output_file_path = base_dir_path.join(output_file);
         let output = tokio::fs::read(output_file_path)
             .await
             .map_err(anyhow::Error::msg)?;
