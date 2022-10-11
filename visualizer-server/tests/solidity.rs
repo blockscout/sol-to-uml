@@ -16,7 +16,6 @@ use walkdir::WalkDir;
 const CONTRACTS_DIR: &'static str = "tests/contracts";
 const SAMPLES_DIR: &'static str = "tests/samples";
 
-
 fn get_dir_files(project_path: &PathBuf) -> BTreeMap<PathBuf, String> {
     let mut sources = BTreeMap::new();
 
