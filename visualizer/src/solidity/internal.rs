@@ -13,6 +13,8 @@ pub enum Error {
     Internal(#[from] anyhow::Error),
     #[error("sol2uml call failed: {0}")]
     Sol2Uml(String),
+    #[error("failed to save files")]
+    SaveFiles(#[from] std::io::Error),
 }
 
 pub async fn save_files(root: &Path, files: BTreeMap<PathBuf, String>) -> Result<(), Error> {
@@ -39,9 +41,7 @@ pub async fn save_files(root: &Path, files: BTreeMap<PathBuf, String>) -> Result
     let results: Vec<_> = futures::future::join_all(join).await;
 
     for result in results {
-        result
-            .map_err(anyhow::Error::msg)?
-            .map_err(anyhow::Error::msg)?;
+        result.map_err(anyhow::Error::msg)??;
     }
 
     Ok(())

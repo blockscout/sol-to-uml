@@ -23,6 +23,7 @@ impl From<internal::Error> for VisualizeContractsError {
         match error {
             Error::Internal(err) => VisualizeContractsError::Internal(err),
             Error::Sol2Uml(err) => VisualizeContractsError::Execution(err),
+            Error::SaveFiles(err) => VisualizeContractsError::Execution(err.to_string()),
         }
     }
 }

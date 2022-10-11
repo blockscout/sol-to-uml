@@ -309,139 +309,106 @@ mod success_known_issues {
 }
 
 mod failure_tests {
-    // use super::*;
+    use super::*;
 
-    // #[actix_web::test]
-    // async fn uml_wrong_path() {
-    //     // also will fail for storage
-    //     let route = format!("{}/uml", ROUTE);
-    //     let app = test::init_service(
-    //         App::new().service(web::resource(&route).route(web::post().to(sol_to_uml_handler))),
-    //     )
-    //     .await;
+    #[actix_web::test]
+    async fn uml_wrong_path() {
+        let contract_path = format!("{}/SimpleContract.sol", CONTRACTS_DIR);
+        let contract =
+            fs::read_to_string(&contract_path).expect("Error while reading SimpleContract.sol");
+        let request = json!({
+            "sources": {
+                "/usr/SimpleContract.sol": contract,
+            }
+        });
 
-    //     let contract_path = format!("{}/SimpleContract.sol", CONTRACTS_DIR);
-    //     let contract =
-    //         fs::read_to_string(&contract_path).expect("Error while reading SimpleContract.sol");
+        let response = test_setup(request, "/api/v1/solidity:visualizeContracts").await;
 
-    //     let request = SolToUmlRequest {
-    //         sources: BTreeMap::from([(PathBuf::from("/usr/SimpleContract.sol"), contract)]),
-    //     };
-    //     let response = TestRequest::post()
-    //         .uri(&route)
-    //         .set_json(&request)
-    //         .send_request(&app)
-    //         .await;
+        assert!(
+            response.status().is_client_error(),
+            "Invalid status code (failed expected): {}",
+            response.status()
+        );
 
-    //     assert!(
-    //         response.status().is_client_error(),
-    //         "Invalid status code (failed expected): {}",
-    //         response.status()
-    //     );
+        let message = response.response().error().unwrap().to_string();
+        assert!(
+            message.contains("All paths should be relative"),
+            "Invalid response message: {}",
+            message
+        );
+    }
 
-    //     let message = response.response().error().unwrap().to_string();
-    //     assert!(
-    //         message.contains("All paths should be relative"),
-    //         "Invalid response message: {}",
-    //         message
-    //     );
-    // }
+    #[actix_web::test]
+    async fn storage_wrong_main_contract() {
+        let contract_path = PathBuf::from(format!("{}/SimpleContract.sol", CONTRACTS_DIR));
 
-    // #[actix_web::test]
-    // async fn storage_wrong_main_contract() {
-    //     let route = format!("{}/storage", ROUTE);
-    //     let app = test::init_service(
-    //         App::new().service(web::resource(&route).route(web::post().to(sol_to_storage_handler))),
-    //     )
-    //     .await;
+        let request = json!({
+            "sources": get_dir_files(&contract_path),
+            "contract_name": "dsd",
+            "file_name": "SimpleContract.sol",
+        });
+        let response = test_setup(request, "/api/v1/solidity:visualizeStorage").await;
 
-    //     let contract_path = format!("{}/SimpleContract.sol", CONTRACTS_DIR);
-    //     let contract =
-    //         fs::read_to_string(&contract_path).expect("Error while reading SimpleContract.sol");
+        assert!(
+            response.status().is_client_error(),
+            "Invalid status code (failed expected): {}",
+            response.status()
+        );
 
-    //     let request = SolToStorageRequest {
-    //         sources: BTreeMap::from([(PathBuf::from("./contracts/SimpleContract.sol"), contract)]),
-    //         main_contract: String::from("dsd"),
-    //         main_contract_filename: PathBuf::from("SimpleContract.sol"),
-    //     };
-    //     let response = TestRequest::post()
-    //         .uri(&route)
-    //         .set_json(&request)
-    //         .send_request(&app)
-    //         .await;
+        let message = response.response().error().unwrap().to_string();
+        assert!(
+            message.contains("Failed to find contract with name"),
+            "Invalid response message: {}",
+            message
+        );
+    }
 
-    //     assert!(
-    //         response.status().is_client_error(),
-    //         "Invalid status code (failed expected): {}",
-    //         response.status()
-    //     );
+    #[actix_web::test]
+    async fn uml_library_with_syntax_error() {
+        let project_path = PathBuf::from(format!("{}/library_syntax_error", CONTRACTS_DIR));
 
-    //     let message = response.response().error().unwrap().to_string();
-    //     assert!(
-    //         message.contains("Failed to find contract with name"),
-    //         "Invalid response message: {}",
-    //         message
-    //     );
-    // }
+        let request = json!({ "sources": get_dir_files(&project_path) });
 
-    // #[actix_web::test]
-    // async fn uml_library_with_syntax_error() {
-    //     // also will fail for storage
-    //     let mut request = SolToUmlRequest {
-    //         sources: BTreeMap::new(),
-    //     };
+        let response = test_setup(request, "/api/v1/solidity:visualizeContracts").await;
+        assert!(
+            response.status().is_client_error(),
+            "Invalid status code (failed expected): {}",
+            response.status()
+        );
+        let err = response.response().error().unwrap().to_string();
+        assert!(
+            err.contains("Failed to parse solidity code",),
+            "Invalid response, wrong error type: {}",
+            err
+        )
+    }
 
-    //     let project_path = PathBuf::from(format!("{}/library_syntax_error", CONTRACTS_DIR));
-    //     fill_sources_map(request.sources.borrow_mut(), &project_path);
+    #[actix_web::test]
+    async fn storage_import_missing_inherited_contract() {
+        // sol2uml returns error if main contract is inherited from missing contract
+        // cause it affects main contract storage
+        let project_path = PathBuf::from(format!(
+            "{}/ImportMissingInheritedContract.sol",
+            CONTRACTS_DIR
+        ));
 
-    //     let result = sol_to_uml_handler(Json(request)).await;
-    //     match result {
-    //         Ok(res) => {
-    //             panic!(
-    //                 "Invalid response, error expected. Response: {}",
-    //                 res.uml_diagram
-    //             );
-    //         }
-    //         Err(err) => {
-    //             if !err.to_string().contains("Failed to parse solidity code") {
-    //                 panic!("Invalid response, wrong error type. {}", err);
-    //             }
-    //         }
-    //     };
-    // }
+        let request = json!({
+            "sources": get_dir_files(&project_path),
+            "contract_name": "Main",
+            "file_name": "ImportMissingInheritedContract.sol",
+        });
 
-    // #[actix_web::test]
-    // async fn storage_import_missing_inherited_contract() {
-    //     // sol2uml returns error if main contract is inherited from missing contract
-    //     // cause it affects main contract storage
-    //     let mut request = SolToStorageRequest {
-    //         sources: BTreeMap::new(),
-    //         main_contract: String::from("Main"),
-    //         main_contract_filename: PathBuf::from("ImportMissingInheritedContract.sol"),
-    //     };
-
-    //     let project_path = PathBuf::from(format!(
-    //         "{}/ImportMissingInheritedContract.sol",
-    //         CONTRACTS_DIR
-    //     ));
-    //     fill_sources_map(request.sources.borrow_mut(), &project_path);
-
-    //     let result = sol_to_storage_handler(Json(request)).await;
-    //     match result {
-    //         Ok(res) => {
-    //             panic!(
-    //                 "Invalid response, error expected. Response: {}",
-    //                 res.storage
-    //             );
-    //         }
-    //         Err(err) => {
-    //             if !err
-    //                 .to_string()
-    //                 .contains("Failed to find inherited contract")
-    //             {
-    //                 panic!("Invalid response, wrong error type. {}", err);
-    //             }
-    //         }
-    //     };
-    // }
+        let response = test_setup(request, "/api/v1/solidity:visualizeStorage").await;
+        assert!(
+            response.status().is_client_error(),
+            "Invalid status code (failed expected): {}",
+            response.status()
+        );
+        let err = response.response().error().unwrap().to_string();
+        assert!(
+            err.contains("Failed to find inherited contract",),
+            "Invalid response, wrong error type: {}",
+            err
+        )
+    }
 }

@@ -27,6 +27,7 @@ impl From<internal::Error> for VisualizeStorageError {
         match error {
             Error::Internal(err) => VisualizeStorageError::Internal(err),
             Error::Sol2Uml(err) => VisualizeStorageError::Execution(err),
+            Error::SaveFiles(err) => VisualizeStorageError::Execution(err.to_string()),
         }
     }
 }
