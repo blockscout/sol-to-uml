@@ -46,7 +46,7 @@ pub async fn visualize_storage(
     let svg = if request.output_mask.contains(&ResponseFieldMask::Svg) {
         let output_file = "result.svg";
         Sol2Uml::new()
-            .current_dir(&base_dir)    
+            .current_dir(&base_dir)
             .arg("storage")
             .arg(".")
             .arg("-c")
