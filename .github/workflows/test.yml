@@ -49,7 +49,7 @@ jobs:
         run: cargo test --locked --workspace --all-features --doc -- --skip proto
         if: success() || failure()
 
-      - name: cargo test
+      - name: Integration tests
         run: cargo test --locked --workspace --test '*'
         if: success() || failure()
 
