@@ -11,54 +11,8 @@ env:
   IMAGE_NAME: blockscout/visualizer-server
 
 jobs:
-  unit:
-    name: Unit tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install deps
-        uses: ./.github/actions/deps
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: Swatinem/rust-cache@v1
-        with:
-          cache-on-failure: true
-
-      - name: cargo test
-        run: cargo test --locked --workspace --all-features --lib --bins
-
-  doc:
-    name: Doc tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install deps
-        uses: ./.github/actions/deps
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: Swatinem/rust-cache@v1
-        with:
-          cache-on-failure: true
-
-      - name: cargo test
-        run: cargo test --locked --workspace --all-features --doc -- --skip proto
-
-  integration:
-    name: Integration tests
+  test:
+    name: Unit, doc and integration tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -87,8 +41,17 @@ jobs:
         with:
           cache-on-failure: true
 
-      - name: cargo test
+      - name: Unit tests
+        run: cargo test --locked --workspace --all-features --lib --bins
+        if: success() || failure()
+
+      - name: Doc tests
+        run: cargo test --locked --workspace --all-features --doc -- --skip proto
+        if: success() || failure()
+
+      - name: Integration tests
         run: cargo test --locked --workspace --test '*'
+        if: success() || failure()
 
   lint:
     name: Linting
@@ -123,9 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - lint
-      - unit
-      - doc
-      - integration
+      - test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
