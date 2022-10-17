@@ -1,6 +1,7 @@
 pub mod run;
 
 mod health;
+mod metrics;
 mod proto;
 mod settings;
 mod solidity;
