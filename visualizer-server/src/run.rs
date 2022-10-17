@@ -5,6 +5,7 @@ use crate::{
         solidity_visualizer_server::SolidityVisualizerServer,
     },
     solidity::{route_solidity_visualizer, SolidityVisualizerService},
+    tracer::init_logs,
     Settings,
 };
 use actix_web::{dev::Server, App, HttpServer};
@@ -42,6 +43,8 @@ pub async fn grpc_server(
 }
 
 pub async fn sol2uml(settings: Settings) -> Result<(), anyhow::Error> {
+    init_logs(settings.jaeger);
+
     let visualizer = Arc::new(SolidityVisualizerService::default());
     let health = Arc::new(HealthService::default());
 

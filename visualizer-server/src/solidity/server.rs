@@ -1,6 +1,8 @@
-use crate::proto::blockscout::visualizer::v1::{
-    solidity_visualizer_server::SolidityVisualizer, VisualizeContractsRequest, VisualizeResponse,
-    VisualizeStorageRequest,
+use crate::{
+    proto::blockscout::visualizer::v1::{
+        solidity_visualizer_server::SolidityVisualizer, VisualizeContractsRequest,
+        VisualizeResponse, VisualizeStorageRequest,
+    },
 };
 
 #[derive(Default)]
@@ -8,6 +10,7 @@ pub struct SolidityVisualizerService {}
 
 #[async_trait::async_trait]
 impl SolidityVisualizer for SolidityVisualizerService {
+    #[tracing::instrument(skip(self, request), level = "info")]
     async fn visualize_contracts(
         &self,
         request: tonic::Request<VisualizeContractsRequest>,
@@ -27,6 +30,7 @@ impl SolidityVisualizer for SolidityVisualizerService {
             })
     }
 
+    #[tracing::instrument(skip(self, request), level = "info")]
     async fn visualize_storage(
         &self,
         request: tonic::Request<VisualizeStorageRequest>,
