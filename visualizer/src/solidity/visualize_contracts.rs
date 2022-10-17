@@ -4,7 +4,6 @@ use std::{collections::BTreeMap, path::PathBuf};
 use tempfile::TempDir;
 use thiserror::Error;
 
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VisualizeContractsRequest {
     pub sources: BTreeMap<PathBuf, String>,

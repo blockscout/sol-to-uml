@@ -1,8 +1,6 @@
-use crate::{
-    proto::blockscout::visualizer::v1::{
-        solidity_visualizer_server::SolidityVisualizer, VisualizeContractsRequest,
-        VisualizeResponse, VisualizeStorageRequest,
-    },
+use crate::proto::blockscout::visualizer::v1::{
+    solidity_visualizer_server::SolidityVisualizer, VisualizeContractsRequest, VisualizeResponse,
+    VisualizeStorageRequest,
 };
 
 #[derive(Default)]

@@ -1,7 +1,7 @@
 use opentelemetry::{
     global::{self},
     sdk::{self, propagation::TraceContextPropagator},
-    trace::{TraceError},
+    trace::TraceError,
 };
 use tracing_subscriber::{filter::LevelFilter, layer::SubscriberExt, prelude::*};
 
