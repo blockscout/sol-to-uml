@@ -5,6 +5,7 @@ use crate::{
         solidity_visualizer_server::SolidityVisualizerServer,
     },
     solidity::{route_solidity_visualizer, SolidityVisualizerService},
+    tracer::init_logs,
     Settings,
 };
 use actix_web::{dev::Server, App, HttpServer};
@@ -15,7 +16,7 @@ pub fn http_server(
     health: Arc<HealthService>,
     addr: SocketAddr,
 ) -> Server {
-    log::info!("starting http server on addr {}", addr);
+    tracing::info!("starting http server on addr {}", addr);
     let server = HttpServer::new(move || {
         App::new()
             .configure(|config| route_solidity_visualizer(config, visualizer.clone()))
@@ -32,7 +33,7 @@ pub async fn grpc_server(
     health: Arc<HealthService>,
     addr: SocketAddr,
 ) -> Result<(), anyhow::Error> {
-    log::info!("starting grpc server on addr {}", addr);
+    tracing::info!("starting grpc server on addr {}", addr);
     let server = tonic::transport::Server::builder()
         .add_service(SolidityVisualizerServer::from_arc(visualizer))
         .add_service(HealthServer::from_arc(health));
@@ -42,6 +43,8 @@ pub async fn grpc_server(
 }
 
 pub async fn sol2uml(settings: Settings) -> Result<(), anyhow::Error> {
+    init_logs(settings.jaeger);
+
     let visualizer = Arc::new(SolidityVisualizerService::default());
     let health = Arc::new(HealthService::default());
 

@@ -78,10 +78,11 @@ impl Sol2Uml {
         self
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn call(&mut self) -> Result<(), Error> {
         let output = self.command.output().await.map_err(anyhow::Error::msg)?;
 
-        tracing::info!("process finished with output: {:?}", output);
+        tracing::info!(output = ?output, "process finished");
 
         if output.status.success() && output.stderr.is_empty() {
             Ok(())

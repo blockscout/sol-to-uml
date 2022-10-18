@@ -20,6 +20,7 @@ impl Eq for IgnoredAny {}
 #[serde(default, deny_unknown_fields)]
 pub struct Settings {
     pub server: ServerSettings,
+    pub jaeger: JaegerSettings,
 
     // Is required as we deny unknown fields, but allow users provide
     // path to config through PREFIX__CONFIG env variable. If removed,
@@ -63,6 +64,22 @@ impl Default for GrpcServerSettings {
         Self {
             enabled: true,
             addr: SocketAddr::from_str("0.0.0.0:8051").expect("valid addr"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct JaegerSettings {
+    pub enabled: bool,
+    pub agent_endpoint: String,
+}
+
+impl Default for JaegerSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            agent_endpoint: "localhost:6831".to_string(),
         }
     }
 }

@@ -28,6 +28,7 @@ impl From<internal::Error> for VisualizeContractsError {
     }
 }
 
+#[tracing::instrument(level = "debug", name = "visualize_contracts_internal")]
 pub async fn visualize_contracts(
     request: VisualizeContractsRequest,
 ) -> Result<Response, VisualizeContractsError> {

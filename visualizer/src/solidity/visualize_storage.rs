@@ -32,6 +32,7 @@ impl From<internal::Error> for VisualizeStorageError {
     }
 }
 
+#[tracing::instrument(level = "debug", name = "visualize_storage_internal")]
 pub async fn visualize_storage(
     request: VisualizeStorageRequest,
 ) -> Result<Response, VisualizeStorageError> {

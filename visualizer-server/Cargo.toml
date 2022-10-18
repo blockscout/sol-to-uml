@@ -19,15 +19,19 @@ anyhow = "1.0"
 async-trait = "0.1"
 bytes = "1.2"
 config = "0.13"
-log = "0.4"
 env_logger = "0.9"
 futures = "0.3"
+opentelemetry = {version = "0.18", features = ["rt-tokio"]}
+opentelemetry-jaeger = { version = "0.17", features = ["rt-tokio"] }
 prost = "0.11"
 prost-types = "0.11"
 serde = { version = "1", features = ["derive"] }
 serde_with = { version = "2.0", features = ["hex", "base64"] }
 tokio = "1.21"
 tonic = "0.8"
+tracing = "0.1"
+tracing-opentelemetry = "0.18"
+tracing-subscriber = {version = "0.3", features = ["env-filter"]}
 
 [dev-dependencies]
 pretty_assertions = "1.3"

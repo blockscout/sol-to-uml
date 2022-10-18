@@ -4,6 +4,7 @@ mod health;
 mod proto;
 mod settings;
 mod solidity;
+mod tracer;
 
 pub use health::HealthService;
 pub use settings::Settings;
