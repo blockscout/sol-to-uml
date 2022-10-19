@@ -20,6 +20,7 @@ impl Eq for IgnoredAny {}
 #[serde(default, deny_unknown_fields)]
 pub struct Settings {
     pub server: ServerSettings,
+    pub metrics: MetricsSettings,
     pub jaeger: JaegerSettings,
 
     // Is required as we deny unknown fields, but allow users provide
@@ -64,6 +65,24 @@ impl Default for GrpcServerSettings {
         Self {
             enabled: true,
             addr: SocketAddr::from_str("0.0.0.0:8051").expect("valid addr"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct MetricsSettings {
+    pub enabled: bool,
+    pub addr: SocketAddr,
+    pub route: String,
+}
+
+impl Default for MetricsSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            addr: SocketAddr::from_str("0.0.0.0:6060").expect("should be valid url"),
+            route: "/metrics".to_string(),
         }
     }
 }

@@ -1,3 +1,4 @@
+use crate::metrics;
 use std::{
     collections::BTreeMap,
     ffi::OsStr,
@@ -80,7 +81,10 @@ impl Sol2Uml {
 
     #[tracing::instrument(skip(self), level = "debug")]
     pub async fn call(&mut self) -> Result<(), Error> {
-        let output = self.command.output().await.map_err(anyhow::Error::msg)?;
+        let output = {
+            let _timer = metrics::SOL2UML_EXECUTION_TIME.start_timer();
+            self.command.output().await.map_err(anyhow::Error::msg)?
+        };
 
         tracing::info!(output = ?output, "process finished");
 
