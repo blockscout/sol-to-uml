@@ -1,3 +1,5 @@
+**Note:** Project was moved to https://github.com/blockscout/blockscout-rs.
+
 # sol-to-uml
 A Rust service for generating Unified Modeling Language (UML) class diagrams and storage diagrams for Solidity contracts based on Node.js package
 [sol2uml](https://github.com/naddison36/sol2uml).
